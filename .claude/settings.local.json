@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"C:\\Users\\User\\OneDrive\\바탕 화면\\세종대학교\\Capstone디자인\\Health Monitoring App\" /B)",
+      "Bash(dir \"C:\\Users\\User\\OneDrive\\바탕 화면\\세종대학교\\Capstone디자인\\Health Monitoring App\\src\" /s /b)",
+      "Bash(npm run dev:*)",
+      "Bash(git init:*)"
+    ]
+  }
+}
