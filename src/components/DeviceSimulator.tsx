@@ -15,8 +15,6 @@ export function DeviceSimulator({ onNewData }: DeviceSimulatorProps) {
 
   const simulateReading = () => {
     setIsReading(true);
-    setShowMealQuestion(false);
-    setMealStatus(null);
 
     // Simulate device reading delay
     setTimeout(() => {
@@ -30,7 +28,6 @@ export function DeviceSimulator({ onNewData }: DeviceSimulatorProps) {
       setCurrentGlucose(glucose);
       onNewData(sodium, glucose);
       setIsReading(false);
-      setShowMealQuestion(true);
     }, 2000);
   };
 
@@ -99,7 +96,10 @@ export function DeviceSimulator({ onNewData }: DeviceSimulatorProps) {
       <div className="flex gap-3">
         {!isConnected ? (
           <button
-            onClick={() => setIsConnected(true)}
+            onClick={() => {
+              setIsConnected(true);
+              setShowMealQuestion(true);
+            }}
             className="flex-1 bg-indigo-600 text-white py-4 rounded-xl hover:bg-indigo-700 transition-colors active:scale-98 touch-manipulation"
           >
             소자 연결
@@ -108,7 +108,7 @@ export function DeviceSimulator({ onNewData }: DeviceSimulatorProps) {
           <>
             <button
               onClick={simulateReading}
-              disabled={isReading}
+              disabled={isReading || !mealStatus}
               className="flex-1 bg-indigo-600 text-white py-4 rounded-xl hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed active:scale-98 touch-manipulation"
             >
               {isReading ? (

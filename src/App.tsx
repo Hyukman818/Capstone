@@ -296,20 +296,30 @@ export default function App() {
   // Main Dashboard
   return (
     <div className="app-container">
-      {/* Mobile Header */}
-      <div className="bs-card sticky top-0 z-10 rounded-none border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bs-icon-container bs-gradient-purple">
-              <Heart className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold bs-text-primary">디펜서스</h1>
-              <p className="text-xs bs-text-secondary">안녕하세요, 행배님!</p>
+      {/* Mobile Header - Hidden in hospital tab */}
+      {activeTab !== 'hospital' && (
+        <div
+          className="bg-white"
+          style={{
+            padding: '16px 8px',
+            margin: '0 20px 12px 20px',
+            borderRadius: '16px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)'
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bs-icon-container bs-gradient-purple">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold bs-text-primary">디펜서스</h1>
+                <p className="text-xs bs-text-secondary">안녕하세요, 행배님!</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content - with bottom nav padding */}
       <div className="bs-scroll-container">
@@ -517,9 +527,8 @@ export default function App() {
                     className="text-2xl font-bold"
                     style={{ color: "var(--banksalad-primary)" }}
                   >
-                    {healthData.length}
+                    {healthData.length}<span className="text-xs bs-text-tertiary ml-1">회</span>
                   </p>
-                  <p className="text-xs bs-text-tertiary mt-1">회</p>
                 </div>
                 <div
                   className="p-4 rounded-xl text-center"
@@ -531,21 +540,39 @@ export default function App() {
                   >
                     최근 측정
                   </p>
-                  <p
-                    className="text-xs font-semibold"
-                    style={{ color: "var(--banksalad-success)" }}
-                  >
-                    {healthData.length > 0
-                      ? new Date(
+                  {healthData.length > 0 ? (
+                    <div>
+                      <p
+                        className="text-xs font-semibold"
+                        style={{ color: "var(--banksalad-success)" }}
+                      >
+                        {new Date(
                           healthData[healthData.length - 1].timestamp
                         ).toLocaleString("ko-KR", {
                           month: "short",
                           day: "numeric",
+                        })}
+                      </p>
+                      <p
+                        className="text-xs font-medium"
+                        style={{ color: "var(--banksalad-success)" }}
+                      >
+                        {new Date(
+                          healthData[healthData.length - 1].timestamp
+                        ).toLocaleString("ko-KR", {
                           hour: "2-digit",
                           minute: "2-digit",
-                        })
-                      : "없음"}
-                  </p>
+                        })}
+                      </p>
+                    </div>
+                  ) : (
+                    <p
+                      className="text-xs font-semibold"
+                      style={{ color: "var(--banksalad-success)" }}
+                    >
+                      없음
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
