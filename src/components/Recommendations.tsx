@@ -109,7 +109,7 @@ export function Recommendations({ profile, lifestyle, latestHealthData, onShowMa
       )}
 
       {/* Recommendations with Accordion */}
-      <Accordion type="multiple" defaultValue={["diet", "exercise", "hospital"]} className="space-y-3">
+      <Accordion type="multiple" className="space-y-3">
         {/* Diet Recommendations */}
         <AccordionItem value="diet" className="bg-white rounded-2xl shadow-lg overflow-hidden border-none">
           <AccordionTrigger className="px-5 py-4 hover:no-underline">

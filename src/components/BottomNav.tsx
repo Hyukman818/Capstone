@@ -1,15 +1,14 @@
-import { Home, Activity, BarChart3, MapPin, User } from 'lucide-react';
+import { Home, Activity, MapPin, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'home' | 'measure' | 'stats' | 'hospital' | 'profile';
-  onTabChange: (tab: 'home' | 'measure' | 'stats' | 'hospital' | 'profile') => void;
+  activeTab: 'home' | 'measure' | 'hospital' | 'profile';
+  onTabChange: (tab: 'home' | 'measure' | 'hospital' | 'profile') => void;
 }
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
     { id: 'home' as const, icon: Home, label: '홈' },
     { id: 'measure' as const, icon: Activity, label: '측정' },
-    { id: 'stats' as const, icon: BarChart3, label: '통계' },
     { id: 'hospital' as const, icon: MapPin, label: '병원' },
     { id: 'profile' as const, icon: User, label: '프로필' },
   ];

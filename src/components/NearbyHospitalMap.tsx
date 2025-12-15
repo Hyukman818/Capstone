@@ -48,118 +48,132 @@ export function NearbyHospitalMap({ onClose }: NearbyHospitalMapProps) {
 
   // Initialize Kakao Map
   useEffect(() => {
-    const KAKAO_API_KEY = '5f0a7caf0dc8a561775e3cc76b75c11b';
-
-    const loadKakaoMapScript = () => {
+    const waitForKakao = () => {
       return new Promise<void>((resolve, reject) => {
+        // 이미 로드되어 있는 경우
         if (window.kakao && window.kakao.maps) {
           resolve();
           return;
         }
 
-        const existingScript = document.getElementById('kakao-maps-sdk');
-        if (existingScript) {
-          existingScript.addEventListener('load', () => resolve());
-          existingScript.addEventListener('error', () => reject(new Error('Failed to load')));
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.id = 'kakao-maps-sdk';
-        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_API_KEY}&libraries=services&autoload=false`;
-        script.async = true;
-
-        script.onload = () => {
+        // 최대 5초 대기
+        let attempts = 0;
+        const maxAttempts = 50;
+        const checkInterval = setInterval(() => {
+          attempts++;
           if (window.kakao && window.kakao.maps) {
-            window.kakao.maps.load(() => resolve());
-          } else {
-            reject(new Error('Kakao object not found'));
+            clearInterval(checkInterval);
+            resolve();
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkInterval);
+            reject(new Error('Kakao Maps SDK 로드 타임아웃'));
           }
-        };
-
-        script.onerror = () => reject(new Error('Failed to load script'));
-        document.head.appendChild(script);
+        }, 100);
       });
     };
 
     const initMap = () => {
-      console.log('initMap 시작');
-      console.log('mapContainer.current:', mapContainer.current);
+      console.log('[지도 초기화] 시작');
+      console.log('[지도 초기화] mapContainer.current:', mapContainer.current);
 
       if (!mapContainer.current) {
-        console.error('mapContainer가 없습니다!');
+        console.error('[지도 초기화 실패] mapContainer가 없습니다!');
         return;
       }
 
-      // 어린이대공원역 좌표
-      const defaultCenter = new window.kakao.maps.LatLng(37.548, 127.074);
-      const options = {
-        center: defaultCenter,
-        level: 4
-      };
+      if (!window.kakao || !window.kakao.maps) {
+        console.error('[지도 초기화 실패] Kakao Maps SDK가 로드되지 않았습니다!');
+        return;
+      }
 
-      console.log('지도 옵션:', options);
-      console.log('컨테이너 크기:', mapContainer.current.offsetWidth, 'x', mapContainer.current.offsetHeight);
+      try {
+        // 어린이대공원역 좌표
+        const defaultCenter = new window.kakao.maps.LatLng(37.548, 127.074);
+        const options = {
+          center: defaultCenter,
+          level: 4
+        };
 
-      const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
-      const placesService = new window.kakao.maps.services.Places();
-      const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
+        console.log('[지도 초기화] 옵션:', options);
+        console.log('[지도 초기화] 컨테이너 크기:', mapContainer.current.offsetWidth, 'x', mapContainer.current.offsetHeight);
 
-      console.log('지도 생성 완료:', kakaoMap);
+        const kakaoMap = new window.kakao.maps.Map(mapContainer.current, options);
+        const placesService = new window.kakao.maps.services.Places();
+        const infowindow = new window.kakao.maps.InfoWindow({ zIndex: 1 });
 
-      mapRef.current = kakaoMap;
-      psRef.current = placesService;
-      infowindowRef.current = infowindow;
+        console.log('[지도 초기화] 완료:', kakaoMap);
+
+        mapRef.current = kakaoMap;
+        psRef.current = placesService;
+        infowindowRef.current = infowindow;
+      } catch (error) {
+        console.error('[지도 초기화 실패] 에러:', error);
+        alert('지도를 초기화하는데 실패했습니다. 페이지를 새로고침해주세요.');
+        return;
+      }
 
       // Get user location
-      if (navigator.geolocation) {
+      if (navigator.geolocation && mapRef.current) {
+        const defaultCenter = new window.kakao.maps.LatLng(37.548, 127.074);
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const loc = new window.kakao.maps.LatLng(
               position.coords.latitude,
               position.coords.longitude
             );
-            kakaoMap.setCenter(loc);
+            if (mapRef.current) {
+              mapRef.current.setCenter(loc);
 
-            const myMarker = new window.kakao.maps.Marker({
-              map: kakaoMap,
-              position: loc,
-              title: '내 위치'
-            });
-            myMarkerRef.current = myMarker;
+              const myMarker = new window.kakao.maps.Marker({
+                map: mapRef.current,
+                position: loc,
+                title: '내 위치'
+              });
+              myMarkerRef.current = myMarker;
 
-            searchPlaces(loc);
+              searchPlaces(loc);
+            }
           },
           () => {
             // 위치 권한 거부 시 기본 위치에서 검색
             searchPlaces(defaultCenter);
           }
         );
-      } else {
+      } else if (mapRef.current) {
+        const defaultCenter = new window.kakao.maps.LatLng(37.548, 127.074);
         searchPlaces(defaultCenter);
       }
 
       // Map drag event
-      window.kakao.maps.event.addListener(kakaoMap, 'dragend', () => {
-        setShowReSearch(true);
-      });
+      if (mapRef.current) {
+        window.kakao.maps.event.addListener(mapRef.current, 'dragend', () => {
+          setShowReSearch(true);
+        });
+      }
     };
 
-    loadKakaoMapScript()
+    waitForKakao()
       .then(() => {
+        console.log('[Kakao Maps SDK] 로드 완료');
         // 지도 컨테이너가 렌더링된 후 초기화
         setTimeout(() => {
           initMap();
-          // 지도 relayout 호출로 크기 재조정
+          // 지도 relayout 호출로 크기 재조정 (모바일 환경 고려)
           if (mapRef.current) {
             setTimeout(() => {
               mapRef.current.relayout();
-            }, 200);
+            }, 300);
+
+            // 추가 relayout (모바일 환경에서 안정적 렌더링)
+            setTimeout(() => {
+              mapRef.current.relayout();
+            }, 600);
           }
-        }, 100);
+        }, 200);
       })
       .catch((error) => {
-        console.error('Error loading Kakao Maps:', error);
+        console.error('[Kakao Maps SDK 로드 실패]:', error);
+        alert('지도를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.');
       });
 
     return () => {
@@ -312,7 +326,7 @@ export function NearbyHospitalMap({ onClose }: NearbyHospitalMapProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-white" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div className="fixed inset-0 z-50 bg-white" style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden', touchAction: 'none' }}>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between" style={{ flexShrink: 0, height: '64px' }}>
         <h2 className="text-lg font-bold text-gray-900">근처 병원 찾기</h2>
@@ -325,8 +339,8 @@ export function NearbyHospitalMap({ onClose }: NearbyHospitalMapProps) {
       </div>
 
       {/* Map */}
-      <div style={{ flex: '0 0 60%', position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
-        <div ref={mapContainer} style={{ width: '100%', height: '100%', position: 'relative' }} />
+      <div style={{ flex: '0 0 60%', position: 'relative', width: '100%', overflow: 'hidden', backgroundColor: '#f0f0f0', minHeight: '300px' }}>
+        <div ref={mapContainer} style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
 
         {/* Re-search Button */}
         {showReSearch && (
