@@ -1,16 +1,38 @@
 import { UserProfile, Lifestyle, HealthData } from '../App';
-import { Utensils, Dumbbell, Hospital, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Utensils, Dumbbell, Hospital, AlertTriangle, CheckCircle, Target } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { PriorityBadge } from './ui/priority-badge';
+import { calculateRecommendationPriorities } from '../utils/recommendationPriority';
+import { generateDietRecommendation, calculateTotalCalories } from '../utils/dietRecommendationLogic';
+import { generateExerciseRecommendation, calculateTotalCalories as calculateExerciseCalories } from '../utils/exerciseRecommendationLogic';
+import { generateHospitalRecommendation } from '../utils/hospitalRecommendationLogic';
+import { MealCard } from './Recommendations/MealCard';
+import { ExerciseCard } from './Recommendations/ExerciseCard';
+import { HospitalCard } from './Recommendations/HospitalCard';
 
 interface RecommendationsProps {
   profile: UserProfile;
   lifestyle: Lifestyle;
   latestHealthData?: HealthData;
+  onShowMap?: () => void;
 }
 
-export function Recommendations({ profile, lifestyle, latestHealthData }: RecommendationsProps) {
+export function Recommendations({ profile, lifestyle, latestHealthData, onShowMap }: RecommendationsProps) {
   // Calculate BMI
   const bmi = profile.weight / Math.pow(profile.height / 100, 2);
-  
+
+  // Calculate priorities
+  const priorities = calculateRecommendationPriorities(profile, lifestyle, latestHealthData);
+
+  // Generate detailed diet recommendation
+  const dietRecommendation = generateDietRecommendation(profile, lifestyle, latestHealthData);
+
+  // Generate detailed exercise recommendation
+  const exerciseRecommendation = generateExerciseRecommendation(profile, lifestyle, latestHealthData);
+
+  // Generate detailed hospital recommendation
+  const hospitalRecommendationResult = generateHospitalRecommendation(profile, lifestyle, latestHealthData);
+
   // Analyze health status
   const healthIssues: string[] = [];
   const healthWarnings: string[] = [];
@@ -45,96 +67,9 @@ export function Recommendations({ profile, lifestyle, latestHealthData }: Recomm
     healthWarnings.push('과도한 음주');
   }
   
-  // Generate diet recommendations
-  const dietRecommendations: string[] = [];
-  
-  if (latestHealthData) {
-    if (latestHealthData.sodium > 145) {
-      dietRecommendations.push('나트륨 섭취 줄이기 (가공식품 피하기)');
-      dietRecommendations.push('충분한 수분 섭취 (하루 2L)');
-      dietRecommendations.push('신선한 채소와 과일 위주');
-    } else if (latestHealthData.sodium < 135) {
-      dietRecommendations.push('적절한 염분 섭취');
-      dietRecommendations.push('전해질 보충');
-    }
-    
-    if (latestHealthData.glucose > 125) {
-      dietRecommendations.push('정제 탄수화물 줄이기');
-      dietRecommendations.push('식이섬유가 풍부한 채소 섭취');
-      dietRecommendations.push('단백질 위주의 균형잡힌 식단');
-      dietRecommendations.push('단 음식과 음료 피하기');
-    } else if (latestHealthData.glucose < 70) {
-      dietRecommendations.push('규칙적인 식사와 간식');
-      dietRecommendations.push('복합 탄수화물과 단백질 조합');
-    }
-  }
-  
-  if (bmi > 25) {
-    dietRecommendations.push('칼로리 제한 (1500-1800kcal)');
-    dietRecommendations.push('고칼로리 음료 피하기');
-  }
-  
-  if (dietRecommendations.length === 0) {
-    dietRecommendations.push('현재 건강 상태 양호');
-    dietRecommendations.push('균형잡힌 식단 유지');
-    dietRecommendations.push('충분한 수분 섭취');
-  }
-  
-  // Generate exercise recommendations
-  const exerciseRecommendations: string[] = [];
-  
-  if (lifestyle.exerciseFrequency === 'none' || lifestyle.exerciseFrequency === 'rarely') {
-    exerciseRecommendations.push('하루 30분 걷기부터 시작');
-    exerciseRecommendations.push('스트레칭과 가벼운 요가');
-  }
-  
-  if (latestHealthData?.glucose && latestHealthData.glucose > 125) {
-    exerciseRecommendations.push('유산소 운동 (주 5회, 30분)');
-    exerciseRecommendations.push('근력 운동 (주 2-3회)');
-    exerciseRecommendations.push('자전거, 수영 등');
-  }
-  
-  if (bmi > 25) {
-    exerciseRecommendations.push('유산소 운동 (주 4-5회)');
-    exerciseRecommendations.push('목표: 주 0.5-1kg 감량');
-  }
-  
-  if (exerciseRecommendations.length === 0) {
-    exerciseRecommendations.push('현재 운동량 유지');
-    exerciseRecommendations.push('근력 운동 추가 (주 2-3회)');
-    exerciseRecommendations.push('스트레칭과 유연성 운동');
-  }
-  
-  // Generate hospital visit recommendations
-  const hospitalRecommendations: string[] = [];
-  
-  if (healthIssues.length > 0) {
-    hospitalRecommendations.push('즉시 병원 방문 필요');
-    hospitalRecommendations.push(`증상: ${healthIssues.join(', ')}`);
-    hospitalRecommendations.push('추천: 내과 또는 가정의학과');
-  } else if (latestHealthData) {
-    if (latestHealthData.glucose > 125 && latestHealthData.glucose <= 140) {
-      hospitalRecommendations.push('당뇨 전단계 - 정기 검진 권장');
-      hospitalRecommendations.push('추천: 내분비내과 상담');
-      hospitalRecommendations.push('3개월마다 혈당 검사');
-    }
-    
-    if (latestHealthData.sodium > 143 || latestHealthData.sodium < 137) {
-      hospitalRecommendations.push('전해질 불균형 모니터링');
-      hospitalRecommendations.push('추천: 신장내과 상담 고려');
-    }
-  }
-  
-  if (lifestyle.smoking) {
-    hospitalRecommendations.push('금연 클리닉 방문 권장');
-    hospitalRecommendations.push('금연 보조제 상담');
-  }
-  
-  if (hospitalRecommendations.length === 0) {
-    hospitalRecommendations.push('현재 정상 범위');
-    hospitalRecommendations.push('연 1회 정기 건강검진 권장');
-    hospitalRecommendations.push('건강 이상 시 즉시 병원 방문');
-  }
+  // Diet recommendations are now generated by generateDietRecommendation()
+  // Exercise recommendations are now generated by generateExerciseRecommendation()
+  // Hospital recommendations are now generated by generateHospitalRecommendation()
 
   return (
     <div className="space-y-4">
@@ -173,71 +108,181 @@ export function Recommendations({ profile, lifestyle, latestHealthData }: Recomm
         </div>
       )}
 
-      {/* Diet Recommendations */}
-      <div className="bg-white rounded-2xl shadow-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-orange-100 p-2.5 rounded-xl">
-            <Utensils className="w-5 h-5 text-orange-600" />
-          </div>
-          <div>
-            <h2 className="text-gray-900">맞춤 식단 추천</h2>
-            <p className="text-xs text-gray-600">건강 데이터 기반</p>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          {dietRecommendations.map((recommendation, index) => (
-            <div key={index} className="flex items-start gap-2 p-3 bg-orange-50 rounded-xl">
-              <CheckCircle className="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-gray-700 flex-1">{recommendation}</p>
+      {/* Recommendations with Accordion */}
+      <Accordion type="multiple" defaultValue={["diet", "exercise", "hospital"]} className="space-y-3">
+        {/* Diet Recommendations */}
+        <AccordionItem value="diet" className="bg-white rounded-2xl shadow-lg overflow-hidden border-none">
+          <AccordionTrigger className="px-5 py-4 hover:no-underline">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="bg-orange-100 p-2.5 rounded-xl">
+                <Utensils className="w-5 h-5 text-orange-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <h2 className="text-gray-900">맞춤 식단 추천</h2>
+                <p className="text-xs text-gray-600">건강 데이터 기반</p>
+              </div>
+              <PriorityBadge priority={priorities.diet} />
             </div>
-          ))}
-        </div>
-      </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-5 pb-5">
+            {/* Diet Type and Daily Target */}
+            <div className="mb-5 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-orange-600" />
+                <h3 className="font-semibold text-gray-900">{dietRecommendation.dietType}</h3>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">
+                일일 권장 칼로리: <span className="font-semibold text-orange-700">{dietRecommendation.dailyCalorieTarget}kcal</span>
+              </p>
+              <div className="space-y-1.5">
+                {dietRecommendation.guidelines.map((guideline, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <CheckCircle className="w-3.5 h-3.5 text-orange-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-700">{guideline}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-      {/* Exercise Recommendations */}
-      <div className="bg-white rounded-2xl shadow-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-green-100 p-2.5 rounded-xl">
-            <Dumbbell className="w-5 h-5 text-green-600" />
-          </div>
-          <div>
-            <h2 className="text-gray-900">맞춤 운동 추천</h2>
-            <p className="text-xs text-gray-600">건강 상태 맞춤</p>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          {exerciseRecommendations.map((recommendation, index) => (
-            <div key={index} className="flex items-start gap-2 p-3 bg-green-50 rounded-xl">
-              <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-gray-700 flex-1">{recommendation}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+            {/* Meal Cards */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">오늘의 추천 식단</h4>
+              {dietRecommendation.recommendedMeals.map((meal) => (
+                <MealCard key={meal.id} meal={meal} />
+              ))}
 
-      {/* Hospital Recommendations */}
-      <div className="bg-white rounded-2xl shadow-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-red-100 p-2.5 rounded-xl">
-            <Hospital className="w-5 h-5 text-red-600" />
-          </div>
-          <div>
-            <h2 className="text-gray-900">병원 방문 안내</h2>
-            <p className="text-xs text-gray-600">전문 의료진 상담</p>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          {hospitalRecommendations.map((recommendation, index) => (
-            <div key={index} className="flex items-start gap-2 p-3 bg-red-50 rounded-xl">
-              <CheckCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-gray-700 flex-1">{recommendation}</p>
+              {/* Total Calories */}
+              {dietRecommendation.recommendedMeals.length > 0 && (
+                <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">총 칼로리:</span> {calculateTotalCalories(dietRecommendation.recommendedMeals)}kcal
+                    <span className="text-xs text-gray-600 ml-2">
+                      (목표: {dietRecommendation.dailyCalorieTarget}kcal)
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Exercise Recommendations */}
+        <AccordionItem value="exercise" className="bg-white rounded-2xl shadow-lg overflow-hidden border-none">
+          <AccordionTrigger className="px-5 py-4 hover:no-underline">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="bg-green-100 p-2.5 rounded-xl">
+                <Dumbbell className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <h2 className="text-gray-900">맞춤 운동 추천</h2>
+                <p className="text-xs text-gray-600">건강 상태 맞춤</p>
+              </div>
+              <PriorityBadge priority={priorities.exercise} />
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-5 pb-5">
+            {/* Exercise Routine Info */}
+            <div className="mb-5 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-green-600" />
+                <h3 className="font-semibold text-gray-900">{exerciseRecommendation.routineName}</h3>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">{exerciseRecommendation.description}</p>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="text-sm">
+                  <span className="text-gray-600">운동 빈도:</span>
+                  <span className="ml-2 font-semibold text-green-700">{exerciseRecommendation.frequency}</span>
+                </div>
+                <div className="text-sm">
+                  <span className="text-gray-600">1회 시간:</span>
+                  <span className="ml-2 font-semibold text-green-700">{exerciseRecommendation.totalDuration}분</span>
+                </div>
+              </div>
+              <div className="mb-3 p-3 bg-white rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">주간 목표:</span> {exerciseRecommendation.weeklyGoal}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                {exerciseRecommendation.guidelines.map((guideline, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-700">{guideline}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Exercise Cards */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">추천 운동 목록</h4>
+              {exerciseRecommendation.recommendedExercises.map((exercise) => (
+                <ExerciseCard key={exercise.id} exercise={exercise} />
+              ))}
+
+              {/* Total Calories */}
+              {exerciseRecommendation.recommendedExercises.length > 0 && (
+                <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">예상 소모 칼로리:</span> {calculateExerciseCalories(exerciseRecommendation.recommendedExercises)}kcal
+                    <span className="text-xs text-gray-600 ml-2">
+                      (1회 운동 시)
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Hospital Recommendations */}
+        <AccordionItem value="hospital" className="bg-white rounded-2xl shadow-lg overflow-hidden border-none">
+          <AccordionTrigger className="px-5 py-4 hover:no-underline">
+            <div className="flex items-center gap-3 flex-1">
+              <div className="bg-red-100 p-2.5 rounded-xl">
+                <Hospital className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <h2 className="text-gray-900">병원 방문 안내</h2>
+                <p className="text-xs text-gray-600">전문 의료진 상담</p>
+              </div>
+              <PriorityBadge priority={priorities.hospital} />
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-5 pb-5">
+            {/* Summary */}
+            <div className="mb-5 p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-red-600" />
+                <h3 className="font-semibold text-gray-900">건강 상태 종합</h3>
+              </div>
+              <p className="text-sm text-gray-700">{hospitalRecommendationResult.summary}</p>
+            </div>
+
+            {/* Primary Recommendation */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">주요 권장 사항</h4>
+                <HospitalCard recommendation={hospitalRecommendationResult.primaryRecommendation} onShowMap={onShowMap} />
+              </div>
+
+              {/* Additional Recommendations */}
+              {hospitalRecommendationResult.additionalRecommendations.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                    추가 관리 항목 ({hospitalRecommendationResult.additionalRecommendations.length}건)
+                  </h4>
+                  <div className="space-y-3">
+                    {hospitalRecommendationResult.additionalRecommendations.map((recommendation) => (
+                      <HospitalCard key={recommendation.id} recommendation={recommendation} onShowMap={onShowMap} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       {/* Disclaimer */}
       <div className="bg-gray-100 rounded-xl p-4">

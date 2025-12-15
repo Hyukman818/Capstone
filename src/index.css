@@ -1439,3 +1439,370 @@ html {
     opacity: .5;
   }
 }
+
+/* ============================================
+   Banksalad-style Design System
+   ============================================ */
+
+:root {
+  /* ===== Typography ===== */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+
+  /* Font Sizes */
+  --font-size-xs: 11px;      /* 작은 설명 텍스트 */
+  --font-size-sm: 13px;      /* 일반 설명, 배지 */
+  --font-size-base: 15px;    /* 본문 */
+  --font-size-md: 16px;      /* 버튼, 입력 */
+  --font-size-lg: 18px;      /* 섹션 제목 */
+  --font-size-xl: 24px;      /* 중요 숫자 */
+  --font-size-2xl: 28px;     /* 건강 데이터 */
+  --font-size-3xl: 32px;     /* 주요 금액/숫자 */
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.5px;
+  --letter-spacing-normal: -0.3px;
+  --letter-spacing-wide: -0.1px;
+
+  /* ===== Color Palette ===== */
+  --banksalad-bg: #F7F8FA;
+  --banksalad-card-bg: #FFFFFF;
+  --banksalad-primary: #6C5CE7;
+  --banksalad-primary-light: #A29BFE;
+  --banksalad-success: #00D2A0;
+  --banksalad-warning: #FFB84D;
+  --banksalad-danger: #FF6B6B;
+  --banksalad-text-primary: #2D3436;
+  --banksalad-text-secondary: #636E72;
+  --banksalad-text-tertiary: #B2BEC3;
+
+  /* ===== Shadows ===== */
+  --banksalad-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --banksalad-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --banksalad-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  /* ===== Border Radius ===== */
+  --banksalad-radius-sm: 12px;
+  --banksalad-radius-md: 16px;
+  --banksalad-radius-lg: 20px;
+
+  /* ===== Spacing (iPhone SE 375px 최적화) ===== */
+  --container-padding: 20px;
+  --section-gap: 16px;
+  --card-padding: 20px;
+}
+
+/* ===== Global Styles ===== */
+body {
+  background: var(--banksalad-bg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  color: var(--banksalad-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container for iPhone SE */
+.app-container {
+  max-width: 375px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--banksalad-bg);
+}
+
+/* Banksalad Card Style */
+.bs-card {
+  background: var(--banksalad-card-bg);
+  border-radius: var(--banksalad-radius-md);
+  padding: var(--card-padding);
+  box-shadow: var(--banksalad-shadow-sm);
+  transition: box-shadow 0.2s ease;
+}
+
+.bs-card:active {
+  box-shadow: var(--banksalad-shadow-md);
+}
+
+/* ===== Typography Classes ===== */
+
+/* 주요 금액/숫자 표시 (32px) */
+.bs-amount {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
+  color: var(--banksalad-text-primary);
+}
+
+/* 중요 숫자 (24px) */
+.bs-amount-sm {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--banksalad-text-primary);
+}
+
+/* 섹션 제목 (18px) */
+.bs-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--banksalad-text-primary);
+  margin-bottom: 12px;
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* 본문 텍스트 (15px) */
+.bs-text-body {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.5;
+}
+
+/* 작은 텍스트 (13px) */
+.bs-text-sm {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 매우 작은 텍스트 (11px) */
+.bs-text-xs {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+}
+
+/* Gradient Backgrounds */
+.bs-gradient-purple {
+  background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+}
+
+.bs-gradient-green {
+  background: linear-gradient(135deg, #00D2A0 0%, #00B894 100%);
+}
+
+.bs-gradient-orange {
+  background: linear-gradient(135deg, #FFB84D 0%, #FD7972 100%);
+}
+
+.bs-gradient-blue {
+  background: linear-gradient(135deg, #74B9FF 0%, #0984E3 100%);
+}
+
+/* ===== Badges ===== */
+.bs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.bs-badge-success {
+  background: rgba(0, 210, 160, 0.12);
+  color: #00B894;
+}
+
+.bs-badge-warning {
+  background: rgba(255, 184, 77, 0.12);
+  color: #F39C12;
+}
+
+.bs-badge-danger {
+  background: rgba(255, 107, 107, 0.12);
+  color: #E74C3C;
+}
+
+.bs-badge-primary {
+  background: rgba(108, 92, 231, 0.12);
+  color: #6C5CE7;
+}
+
+/* Icon Containers */
+.bs-icon-container {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.bs-icon-container-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+/* Progress Bar */
+.bs-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--banksalad-bg);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.bs-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6C5CE7 0%, #A29BFE 100%);
+  border-radius: 100px;
+  transition: width 0.3s ease;
+}
+
+/* Bottom Navigation Safe Area */
+.bs-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 375px;
+  background: var(--banksalad-card-bg);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* ===== Buttons ===== */
+
+/* Touch 최적화 버튼 (iPhone 44px 기준) */
+.bs-touch-button {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: var(--banksalad-radius-sm);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bs-touch-button:active {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+/* Smooth Animations */
+.bs-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* List Items */
+.bs-list-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background 0.2s ease;
+}
+
+.bs-list-item:last-child {
+  border-bottom: none;
+}
+
+.bs-list-item:active {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Divider */
+.bs-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.04);
+  margin: 16px 0;
+}
+
+/* Typography Utilities */
+.bs-text-primary {
+  color: var(--banksalad-text-primary);
+}
+
+.bs-text-secondary {
+  color: var(--banksalad-text-secondary);
+}
+
+.bs-text-tertiary {
+  color: var(--banksalad-text-tertiary);
+}
+
+/* Spacing Utilities for Mobile */
+.bs-container {
+  padding: 0 var(--container-padding);
+}
+
+.bs-section {
+  margin-bottom: var(--section-gap);
+}
+
+/* Scrollable Container */
+.bs-scroll-container {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* Disable pull-to-refresh on iOS */
+.bs-scroll-container {
+  overscroll-behavior-y: contain;
+}
+
+/* ===== Health Data Components ===== */
+
+/* 건강 데이터 숫자 (28px) */
+.health-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  line-height: 1.2;
+}
+
+/* 건강 데이터 라벨 (13px) */
+.health-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--banksalad-text-secondary);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* Status Indicators */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.success {
+  background: var(--banksalad-success);
+}
+
+.status-dot.warning {
+  background: var(--banksalad-warning);
+}
+
+.status-dot.danger {
+  background: var(--banksalad-danger);
+}
